@@ -1,0 +1,343 @@
+
+\documentclass[11pt]{article}
+
+\usepackage{indentfirst, amsmath, setspace, amssymb, amsthm}
+
+\usepackage{natbib}
+%\bibliographystyle{apsr2006}
+\bibliographystyle{apsr}
+\setcitestyle{aysep={}}
+%\usepackage[backend=bibtex]{biblatex}
+
+\usepackage{graphicx}
+\usepackage{hyperref}
+
+\usepackage{graphicx} 
+\usepackage{pgf,tikz} 
+%\usepackage{pgfplots}
+\usetikzlibrary{arrows,shapes}
+\usetikzlibrary{decorations}
+
+\usepackage{enumitem}
+\usepackage{pdflscape}
+\usepackage{mathtools}
+\usepackage{upgreek} 
+\usepackage{xfrac}
+\usepackage{epstopdf}
+\usepackage{color}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{longtable} 
+\usepackage{verbatim}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{longtable}
+\usepackage{dcolumn}
+\usepackage{lscape}
+%\usepackage{apacite}
+\usepackage{hyperref}
+\usetikzlibrary{shapes,arrows}
+\usetikzlibrary{positioning}
+\usepackage[capposition=top]{floatrow}
+\usepackage{fullpage}
+%\usepackage[small,bf]{caption}
+\usepackage{float}
+\usepackage{placeins}
+\usepackage{color, colortbl}
+\usepackage{bigstrut}
+\renewcommand{\floatpagefraction}{.8}
+\definecolor{LightCyan}{RGB}{204,229,255}
+
+\usepackage{xcolor}
+\hypersetup{
+    colorlinks,
+    linkcolor={red!50!black},
+    citecolor={blue!50!black},
+    urlcolor={blue!80!black}
+}
+
+\usepackage{adjustbox}
+
+\newcolumntype{R}[2]{%
+    >{\adjustbox{angle=#1,lap=\width-(#2)}\bgroup}%
+    l%
+    <{\egroup}%
+}
+\newcommand*\rot{\multicolumn{1}{R{45}{1em}}}
+
+\theoremstyle{plain}
+\newtheorem{hyp}{Hypothesis}
+
+\usepackage{subcaption}
+\newcommand{\subfloat}[2][need a sub-caption]{\subcaptionbox{#1}{#2}}
+\newcolumntype{L}[1]{>{\raggedright\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+
+\newcommand{\citeposs}[1]{\citeauthor{#1}'s \citeyear{#1}}
+\usepackage{rotating}
+\usepackage{ragged2e}
+\newcolumntype{P}[1]{>{\RaggedRight\hspace{0pt}}p{#1}}
+\usepackage[left=1.25in, right=1.25in, top=1.25in, bottom=1.25in, footskip=.25in]{geometry}
+\setlength{\footnotesep}{16pt}
+
+\newtheorem{prop}{Proposition}
+
+\pagestyle{plain}
+
+\onehalfspacing
+
+<<setup_general, include=F>>=
+knitr::opts_chunk$set(echo = T, warning=F, message=F, error=F, cache=T)
+options(Encoding="UTF-8")
+@
+
+\title{Métodos Quantitativos II - Lista 2}
+\author{Professor Manoel Galdino e Monitor Davi Veronese}
+\date{\today}
+
+\begin{document}
+
+\maketitle 
+
+Esta lista destina-se a revisar questões de estatística básica. Nos exercícios, vamos utilizar dados da Pesquisa Nacional por Amostra de Domicílios Contínua (PNADc).
+
+Os alunos devem entregar um arquivo PDF contendo as respostas e o script para replicação.
+
+<<>>=
+
+# Material de apoio para esta lista:
+# https://jonnyphillips.github.io/Analise_de_Dados_2022/
+
+@
+
+\section{}
+
+O pacote PNADcIBGE permite importar bases de dados diretamente para o environment do R. Primeiro, instale e ative o pacote. Depois, importe os dados do último trimestre de 2017 (variáveis selecionadas) por meio do código abaixo.
+
+<<>>=
+# Ver: https://cran.r-project.org/web/packages/PNADcIBGE/PNADcIBGE.pdf
+# Instale o pacote
+# install.packages("PNADcIBGE")
+
+# Carregue o pacote
+library(PNADcIBGE)
+
+# Importe os dados desejados
+data <- get_pnadc(year=2017, 
+                  quarter=4, 
+                  selected=FALSE, 
+                  vars=c("Ano", "Trimestre", "UF", "V2007", "VD4020", "VD4035"), 
+                  design=FALSE,
+                  savedir=tempdir())
+# Por razões didáticas, selecionamos "design=FALSE" para ignorar o plano amostral. 
+# Não faça isso em sua pesquisa.
+
+# Selecione apenas as variáveis úteis para esta lista:
+library(tidyverse)
+library(tidylog)
+
+data <- data %>%
+  select(Ano, Trimestre, UF, V2007, VD4020, VD4035)
+
+# Renomeie as variáveis:
+data <- data %>%
+  rename(Sexo = V2007,
+         Renda = VD4020,
+         Horas_trabalhadas = VD4035)
+@
+
+\section{}
+
+Calcule:
+
+i) a renda média;
+
+ii) a variância da renda;
+
+iii) a renda média dos homens e das mulheres;
+
+iv) a renda média em cada estado brasileiro;
+
+v) a covariância entre a renda e o número de horas trabalhadas.
+
+<<>>=
+
+library(knitr)
+
+# Renda média e variância
+data %>% summarize(renda_media = mean(Renda, na.rm = TRUE), 
+                   variancia_renda = var(Renda, na.rm = TRUE)) %>% kable()
+
+# Renda média por sexo
+data %>% group_by(Sexo) %>%
+  summarize(renda_media = mean(Renda, na.rm = TRUE)) %>% kable()
+
+# Renda por estado
+data %>% group_by(UF) %>%
+  summarize(renda_media = mean(Renda, na.rm = TRUE)) %>% kable()
+
+# Covariância entre renda e número de horas trabalhadas
+cov(data$Renda, data$Horas_trabalhadas, use = "complete.obs")
+
+@
+
+\section{}
+
+Exemplifique a veracidade da equação, considerando X = Renda, Y = Horas trabalhadas, a = 2 e b = 3.
+
+\begin{equation}
+E[aX + bY] = a \times E[X] + b \times E[Y]
+\end{equation}
+
+<<>>=
+
+data %>%
+ mutate(renda_3 = 2*Renda,
+        horas_2 = 3*Horas_trabalhadas,
+        Renda_horas = renda_3 + horas_2, na.rm = TRUE) %>%
+ summarize(Renda_horas_mean = mean(Renda_horas, na.rm = TRUE),
+           mean_renda = mean(Renda, na.rm = TRUE),
+           mean_horas = mean(Horas_trabalhadas, na.rm = TRUE)) %>%
+ mutate(Renda_horas_mean_2 = 2*mean_renda + 3*mean_horas)
+
+@
+
+\section{}
+
+Apresente um gráfico que permita visualização adequada da média da renda por estado brasileiro e sexo.
+
+<<>>=
+
+library(ggplot2)
+
+data %>%
+  group_by(UF, Sexo) %>%
+  summarize(renda_media = mean(Renda, na.rm = TRUE)) %>%
+  ggplot() +
+  geom_col(aes(x = UF, y = renda_media, fill = Sexo), position = "dodge") +
+  labs(x = "UF", y = "Renda Média", title = "Renda Média por UF e Sexo") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  scale_fill_manual(values = c("#1f77b4", "#d62728"))
+
+@
+
+\section{}
+
+Agora trabalharemos explicitamente com a esperança condicional. Note que essa lógica estava implícita nas questões anteriores. Assuma duas variáveis aleatórias, X e Y, tais que X = renda e Y = horas trabalhadas.
+
+Calcule:
+
+i) 
+
+\begin{equation}
+E[X|10 \leq Y \leq 20]
+\end{equation}
+
+ii) 
+
+\begin{equation}
+E[X|Y \geq 20]
+\end{equation}
+
+<<>>=
+
+# i)
+data %>%
+ filter(Horas_trabalhadas >= 10 & Horas_trabalhadas <= 20) %>%
+ summarize(renda_media = mean(Renda, na.rm = TRUE)) # 940
+
+# ii)
+
+data %>%
+ filter(Horas_trabalhadas >= 20) %>%
+ summarize(renda_media = mean(Renda, na.rm = TRUE)) # 2015
+
+@
+
+\section{}
+
+Para os itens seguintes (i a iv), remova todas as observações cuja renda seja superior a 10.000 reais.
+
+i) apresente um gráfico de densidade da variável renda. Interprete;
+
+ii) qual é a probabilidade de que, ao retirarmos aleatoriamente uma observação (um indivíduo) dessa base de dados, sua renda seja estritamete maior do que 1000 e estritamente menor do que 2000 reais? Apenas para propósitos didáticos, ignore o erro amostral e trate a sua base de dados como uma população (não faça isso em sua pesquisa);
+
+iii) apresente um gráfico de densidade da renda dado que as horas trabalhadas (Y) sejam menores ou iguais a 20;
+
+iv) calcule:
+\begin{equation}
+P(1000 < X < 2000 | Y \leq 20)
+\end{equation}
+
+<<>>=
+
+library(ggplot2)
+
+# i) 
+
+data %>%
+  filter(Renda < 10000) %>%
+  ggplot() +
+  geom_density(aes(x=Renda), colour="blue", fill="blue", alpha=0.2) + 
+  ggtitle("Gráfico de densidade da renda")
+
+# ii) 
+
+m <- data %>% filter(Renda < 10000) %>% tally() 
+
+n <- data %>% filter(Renda < 10000) %>%
+  filter(Renda > 1000 & Renda < 2000) %>%
+  tally()
+  
+n[[1]]/m[[1]] # 27,34%
+
+# iii)
+
+data %>%
+ filter(Renda < 10000) %>%
+ filter(Horas_trabalhadas <= 20) %>%
+  ggplot() +
+  geom_density(aes(x=Renda), colour="blue", fill="blue", alpha=0.2) +  
+  ggtitle("Gráfico de densidade da renda condicional a horas trabalhadas")
+
+# iv)
+
+w <- data %>% filter(Renda < 10000) %>% tally() 
+z <- data %>% filter(Renda < 10000) %>%
+  filter(Renda > 1000 & Renda < 2000 & Horas_trabalhadas <= 20) %>%
+  tally()
+  
+z[[1]]/w[[1]] # 1,93%
+
+@
+
+\section{}
+
+Mostre que:
+
+i) Se 
+\begin{equation}
+\frac{\sum_{i=1}^{n} X_i}{n} = \overline{X}
+\end{equation} 
+Então
+\begin{equation}
+E[7 \times X_i - 7 \times \overline{X}] = 0
+\end{equation} 
+
+ii)
+\begin{equation}
+E[(X_i - E[X_i])^2] = E[X_i^2] - (E[X_i])^2
+\end{equation} 
+
+\section{}
+
+Apresente seus resultados em um arquivo PDF. Garanta que seu arquivo esteja limpo, contendo as respostas, os gráficos e as tabelas, mas não eventuais mensagens e erros. O arquivo PDF pode ser gerado diretamente a partir do R por meio do RMarkdown ou do RSweave. Para os alunos de graduação, isso é recomendado, mas não obrigatório. Adicionalmente, forneça o script para replicação.
+
+\restoregeometry
+\doublespacing
+\normalsize
+
+\onehalfspacing
+\bibliography{Complete}
+
+\end{document}

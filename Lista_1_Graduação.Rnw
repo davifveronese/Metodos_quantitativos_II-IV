@@ -1,0 +1,257 @@
+\documentclass[11pt]{article}
+
+\usepackage{indentfirst, amsmath, setspace, amssymb, amsthm}
+
+\usepackage{natbib}
+%\bibliographystyle{apsr2006}
+\bibliographystyle{apsr}
+\setcitestyle{aysep={}}
+%\usepackage[backend=bibtex]{biblatex}
+
+\usepackage{graphicx}
+\usepackage{hyperref}
+
+\usepackage{graphicx} 
+\usepackage{pgf,tikz} 
+%\usepackage{pgfplots}
+\usetikzlibrary{arrows,shapes}
+\usetikzlibrary{decorations}
+
+\usepackage{enumitem}
+\usepackage{pdflscape}
+\usepackage{mathtools}
+\usepackage{upgreek} 
+\usepackage{xfrac}
+\usepackage{epstopdf}
+\usepackage{color}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{longtable} 
+\usepackage{verbatim}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{longtable}
+\usepackage{dcolumn}
+\usepackage{lscape}
+%\usepackage{apacite}
+\usepackage{hyperref}
+\usetikzlibrary{shapes,arrows}
+\usetikzlibrary{positioning}
+\usepackage[capposition=top]{floatrow}
+\usepackage{fullpage}
+%\usepackage[small,bf]{caption}
+\usepackage{float}
+\usepackage{placeins}
+\usepackage{color, colortbl}
+\usepackage{bigstrut}
+\renewcommand{\floatpagefraction}{.8}
+\definecolor{LightCyan}{RGB}{204,229,255}
+
+\usepackage{xcolor}
+\hypersetup{
+    colorlinks,
+    linkcolor={red!50!black},
+    citecolor={blue!50!black},
+    urlcolor={blue!80!black}
+}
+
+\usepackage{adjustbox}
+
+\newcolumntype{R}[2]{%
+    >{\adjustbox{angle=#1,lap=\width-(#2)}\bgroup}%
+    l%
+    <{\egroup}%
+}
+\newcommand*\rot{\multicolumn{1}{R{45}{1em}}}
+
+\theoremstyle{plain}
+\newtheorem{hyp}{Hypothesis}
+
+\usepackage{subcaption}
+\newcommand{\subfloat}[2][need a sub-caption]{\subcaptionbox{#1}{#2}}
+\newcolumntype{L}[1]{>{\raggedright\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+
+\newcommand{\citeposs}[1]{\citeauthor{#1}'s \citeyear{#1}}
+\usepackage{rotating}
+\usepackage{ragged2e}
+\newcolumntype{P}[1]{>{\RaggedRight\hspace{0pt}}p{#1}}
+\usepackage[left=1.25in, right=1.25in, top=1.25in, bottom=1.25in, footskip=.25in]{geometry}
+\setlength{\footnotesep}{16pt}
+
+\newtheorem{prop}{Proposition}
+
+\pagestyle{plain}
+
+\onehalfspacing
+
+<<setup_general, include=F>>=
+knitr::opts_chunk$set(echo = T, warning=F, message=F, error=F, cache=T)
+options(Encoding="UTF-8")
+@
+
+\title{Métodos Quantitativos IV - Lista 1}
+\author{Professor Manoel Galdino e Monitor Davi Veronese}
+\date{\today}
+
+\begin{document}
+
+\maketitle 
+
+Esta primeira lista destina-se a exercitar funções básicas no software R. Nos exercícios, utilizaremos dados demográficos disponibilizados pelo IBGE.
+
+Os alunos devem entregar um arquivo PDF contendo as respostas e o script para replicação.
+
+<<>>=
+
+# Material de apoio para esta lista:
+# https://jonnyphillips.github.io/Analise_de_Dados_2022/
+
+@
+
+\section{}
+
+O pacote ribge permite importar bases de dados diretamente para o environment do R. Primeiro, instale e ative o pacote. Depois, importe os dados de 2020 por meio do código abaixo.
+
+<<>>=
+
+# install.packages("devtools")
+# devtools::install_github("tbrugz/ribge")
+library(ribge)
+pop2020 <- populacao_municipios(2020)
+
+# Para mais informções: https://github.com/tbrugz/ribge#readme
+
+@
+
+Qual é a unidade de análise desse banco de dados?
+
+\section{}
+
+Para este exercício e os posteriores, vamos analisar apenas dados relativos ao estado de São Paulo. 
+Selecione apenas as observações referentes ao estado de Sao Paulo. Isso é equivalente a remover da base as observações relativas a outros estados brasileiros.
+
+Antes da análise, limpe a base de dados conforme os seguintes passos: (i) remova as variáveis "codigo uf" e "populacao str", (ii) renomeie "nome munic" para "municipio" e (iii) para todos os nomes de municipios contidos na sua nova variável municipio, coloque todos os caracteres em letra minuscula.
+
+Quantos municípios há no estado de São Paulo?
+
+Qual é o menor município do estado? Quantos habitantes ele tem?
+
+<<>>=
+
+library(tidyverse)
+library(tidylog)
+
+pop2020 <- pop2020 %>%
+  filter(uf == "SP") %>%
+  select(-codigo_uf, -populacao_str) %>%
+  rename(
+    municipio = nome_munic
+  ) %>%
+  mutate(municipio = tolower(municipio))
+
+# A base resultante tem 645 observações.
+# O menor município é Borá, com 838 habitantes.
+
+@
+
+\section{}
+
+Agora vamos utilizar estatísticas para conhecer as características de nossa base de dados, especialmente da variável "populacao".
+
+Para a variável "populacao", calcule: (i) a média, (ii) a mediana, (iii) o desvio padrão e (iv) a variância. 
+
+<<>>=
+
+média <- pop2020 %>%
+  summarize(média = mean(populacao))
+mediana <- pop2020 %>%
+  summarize(mediana = median(populacao))
+desvio_padrão <- pop2020 %>%
+  summarize(desvio_padrão = sd(populacao))
+variância <- pop2020 %>%
+  summarize(variância = var(populacao))
+
+tabela1 <- bind_cols(média, mediana, desvio_padrão, variância)
+
+tabela1 %>% kable(caption = "Estatísticas Descritivas da População do Estado de São Paulo em 2020")
+
+@
+
+\section{}
+
+Note que essas estatísticas não fornecem informações suficientes sobre a distribuição da população. Crie um gráfico de densidade que permita visualizar essa distribuição (dica: use o pacote ggplot2).
+
+<<>>=
+
+library(ggplot2)
+
+pop2020 %>%
+ ggplot() +
+ geom_density(aes(x=populacao), colour="blue", fill="blue", alpha=0.2)
+
+@
+
+O que você observa?
+
+Qual parece ser a medida mais adequada de tendência central: a média ou a mediana?
+
+<<echo =F>>=
+
+# A distribuição é muito assimétrica, de modo que a mediana é uma medida descritiva melhor.
+
+@
+
+\section{}
+
+Agora crie novamente o gráfico de densidade, mas apenas para os municípios com menos de 50.000 habitantes.
+
+Quantos municípios com menos de 50.000 há?
+
+Em comparação ao gráfico anterior, o que você observa?
+
+<<>>=
+
+pop2020 %>%
+ filter(populacao < 50000) %>%
+ ggplot() +
+ geom_density(aes(x=populacao), colour="blue", fill="blue", alpha=0.2)
+
+# Há 504 municípios com menos de 50.000 habitantes.
+# A distribuição ainda é assimétrica, porém consideravelmente menos.
+
+@
+
+\section{}
+
+Para esta questão, importe novamente a base de dados original (para 2020).
+
+Calcule a média da população para cada um dos estados brasileiros e informe quais deles possuem maior e menor população média por município.
+
+<<>>=
+
+pop2020 <- populacao_municipios(2020)
+
+ medias_pop_estados <- pop2020 %>% 
+  group_by(uf) %>%
+  summarize(pop_mean = mean(populacao)) %>%
+  arrange(pop_mean)
+
+medias_pop_estados %>% kable(caption = "Média da população nos municípios por estado")
+
+# Tocantins tem menor média, enquanto Rio de Janeiro possui maior média.
+
+@
+
+\section{}
+
+Apresente seus resultados em um arquivo PDF. Garanta que seu arquivo esteja limpo, contendo as respostas, os gráficos e as tabelas, mas não eventuais mensagens e erros. O arquivo PDF pode ser gerado diretamente a partir do R por meio do RMarkdown ou do RSweave. Para os alunos de graduação, isso é recomendado, mas não obrigatório. Adicionalmente, forneça o script para replicação.
+
+\restoregeometry
+\doublespacing
+\normalsize
+
+\onehalfspacing
+\bibliography{Complete}
+
+\end{document}
