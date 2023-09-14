@@ -1,0 +1,315 @@
+
+\documentclass[11pt]{article}
+
+\usepackage{indentfirst, amsmath, setspace, amssymb, amsthm}
+
+\usepackage{natbib}
+%\bibliographystyle{apsr2006}
+\bibliographystyle{apsr}
+\setcitestyle{aysep={}}
+%\usepackage[backend=bibtex]{biblatex}
+
+\usepackage{graphicx}
+\usepackage{hyperref}
+
+\usepackage{graphicx} 
+\usepackage{pgf,tikz} 
+%\usepackage{pgfplots}
+\usetikzlibrary{arrows,shapes}
+\usetikzlibrary{decorations}
+
+\usepackage{enumitem}
+\usepackage{pdflscape}
+\usepackage{mathtools}
+\usepackage{upgreek} 
+\usepackage{xfrac}
+\usepackage{epstopdf}
+\usepackage{color}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{longtable} 
+\usepackage{verbatim}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{longtable}
+\usepackage{dcolumn}
+\usepackage{lscape}
+%\usepackage{apacite}
+\usepackage{hyperref}
+\usetikzlibrary{shapes,arrows}
+\usetikzlibrary{positioning}
+\usepackage[capposition=top]{floatrow}
+\usepackage{fullpage}
+%\usepackage[small,bf]{caption}
+\usepackage{float}
+\usepackage{placeins}
+\usepackage{color, colortbl}
+\usepackage{bigstrut}
+\renewcommand{\floatpagefraction}{.8}
+\definecolor{LightCyan}{RGB}{204,229,255}
+
+\usepackage{xcolor}
+\hypersetup{
+    colorlinks,
+    linkcolor={red!50!black},
+    citecolor={blue!50!black},
+    urlcolor={blue!80!black}
+}
+
+\usepackage{adjustbox}
+
+\newcolumntype{R}[2]{%
+    >{\adjustbox{angle=#1,lap=\width-(#2)}\bgroup}%
+    l%
+    <{\egroup}%
+}
+\newcommand*\rot{\multicolumn{1}{R{45}{1em}}}% no optional argument here, please!
+
+\theoremstyle{plain}
+\newtheorem{hyp}{Hypothesis}
+
+\usepackage{subcaption}
+\newcommand{\subfloat}[2][need a sub-caption]{\subcaptionbox{#1}{#2}}
+\newcolumntype{L}[1]{>{\raggedright\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+
+\newcommand{\citeposs}[1]{\citeauthor{#1}'s \citeyear{#1}}
+\usepackage{rotating}
+\usepackage{ragged2e}
+\newcolumntype{P}[1]{>{\RaggedRight\hspace{0pt}}p{#1}}
+\usepackage[left=1.25in, right=1.25in, top=1.25in, bottom=1.25in, footskip=.25in]{geometry}
+% This makes footnotes appear to be single spaced within each entry, but double spaced between entries.
+\setlength{\footnotesep}{16pt}
+
+\newtheorem{prop}{Proposition}
+
+\pagestyle{plain}
+
+\onehalfspacing
+
+<<setup_general, include=F>>=
+knitr::opts_chunk$set(echo = T, warning=F, message=F, error=F, cache=T)
+options(Encoding="UTF-8")
+@
+
+\title{Métodos Quantitativos IV - Lista 3}
+\author{Professor Manoel Galdino e Monitor Davi Veronese}
+\date{\today}
+
+\begin{document}
+
+\maketitle 
+
+Nesta lista, trabalharemos com simulação estatística. Explique detalhadamente suas simulações, comentando o código etapa por etapa.
+
+\section{}
+
+Rode ?rnorm no R e leia o help. Se preciso, consulte outras fontes. Explique o que a função faz. Verifique que essa função gera uma simulação de uma distribuição normal, em que você pode especificar a média e o desvio-padrão. Verifique que entendeu rodando  função e gerando valores simulados da função rnorm. Pode usar média 0 e desvio-padrão 1, que são o default da função.
+
+<<>>=
+
+# ?rnorm
+
+@
+
+\section{}
+
+Rode $x <- rnorm(100, mean=2, sd=1)$. Por que a média da distribuição é diferente da média que você obtém rodando mean(x)?
+
+<<>>=
+
+# x <- rnorm(100, mean=2, sd=1)
+# mean(x)
+
+@
+
+Os parâmetros estabelecidos definem a distribuição a partir da qual serão retirados valores aleatórios. A aleatoriedade faz com que a média desses valores não seja exatamente igual à média da distribuição. 
+
+\section{}
+
+(\textcolor{red}{OPCIONAL PARA A GRADUAÇÃO})
+
+Se você rodar de novo $x <- rnorm(100, mean=2, sd=1)$ e calcular a média de x, obterá um valor um pouco diferente da primeira vez. Por quê?
+
+A aleatoriedade dos valores retirados faz com que a média desses valores não seja exatamente igual à média da distribuição. Como os valores retirados são aleatórios, há variabilidade entre simulações.
+
+\section{}
+
+Uma forma de você armazenar as duas médias que você computou em um vetor é do seguinte modo: 
+
+<<echo=TRUE>>=
+
+vetor_medias <- numeric() 
+vetor_medias[1] <- mean(rnorm(100, mean=2, sd=1))
+vetor_medias[2] <- mean(rnorm(100, mean=2, sd=1))
+
+@
+
+Imprima o conteúdo de "vetor medias" e verifique que de fato armazenou duas médias.
+
+\section{}
+
+(\textcolor{red}{OPCIONAL PARA A GRADUAÇÃO})
+
+Repita esse procedimento 30 vezes no total, armazenando as 30 médias no vetor vetor medias. Se possível, use um loop (laço) para fazer isso.
+
+<<>>=
+
+vetor_medias <- numeric()
+
+for (i in 1:30) {
+  
+vetor_medias[i] <- mean(rnorm(100, mean=2, sd=1))
+  
+}
+
+print(vetor_medias)
+
+@
+
+\section{}
+
+Plote o histograma (use a função geom histogram no ggplot) das médias. Para isso, crie um banco de dados (ggplot só aceita plotar variáveis de banco de dados) do seguinte modo:
+
+<<echo=TRUE>>=
+
+#df <- data.frame(medias = vetor_medias, sim_id = 1:30)
+#hist(vetor_medias)
+#mean(vetor_medias)
+#var(vetor_medias)
+
+@
+
+Você reconhece a distribuição apresentada pelo histograma? Se sim, qual é ela? Consegue advinhar a média e desvio padrão da distribuição ou calculá-la?
+
+Distribuição normal com média com média $\mu$ e variância $\frac{\sigma^2}{n}$.
+
+\section{}
+
+(\textcolor{red}{OPCIONAL PARA A GRADUAÇÃO})
+
+Realize uma simulação estatística para verificar a distribuição de probabilidade dos resultados do lançamento de uma moeda.
+
+<<TRUE>>=
+
+library(dplyr)
+library(tidylog)
+library(ggplot2)
+library(tidyverse)
+
+# Defina o número de lançamentos
+n <- 1000000
+
+# Crie um vetor para armazenar os resultados das jogadas
+X <- numeric()
+
+# Suponha que "Cara" == "sair 1" & "Coroa" == "sair 2"
+
+# Lance a moeda n vezes e armazene os resultados
+set.seed(13492)
+for (i in 1:n) { 
+  X[i] <- sample(1:2, size=1, replace = TRUE)
+  }
+
+X <- ifelse(X == 1, "Cara", "Coroa")
+
+# Calcule as probabilidades
+## Uma possibilidade
+table(X) 
+
+## Outra possibilidade:
+sum(X=="Cara")/n # 50,069%
+sum(X=="Coroa")/n # 49,931%
+
+# Outra possibilidade
+sum(rbinom(1000, 1, 0.5))
+
+@
+
+<<echo = F>>=
+
+# Limpe seu environment
+rm(list=ls()) 
+
+@
+
+\section{}
+
+(\textcolor{red}{OPCIONAL PARA A GRADUAÇÃO})
+
+Retire 10, 100, 1000 e 10000 valores de uma distribuição normal padrão e de uma distribuição binomial (n = 20, p = 0.7). Apresente os histogramas.
+
+\[
+  Z \sim \mathcal{N}(0,\,1)\,
+\] 
+
+\[
+  B \sim Bin(20,\,0.7)\,
+\] 
+
+<<echo = TRUE, out.width='.15\\linewidth',fig.show='hold', fig.ncol=4, fig.cap="Histogramas Z", fig.subcap=c("Z1", "Z2", "Z3", "Z4")>>=
+
+# Defina o número de repetições
+n_1 <- 10
+n_2 <- 100
+n_3 <- 1000
+n_4 <- 10000
+
+# Retiradas da normal
+z1 <- rnorm(n_1, 0, 1)
+z2 <- rnorm(n_2, 0, 1)
+z3 <- rnorm(n_3, 0, 1)
+z4 <- rnorm(n_4, 0, 1)
+
+# Retiradas da binomial
+b1 <- rbinom(n_1, 20, 0.7)
+b2 <- rbinom(n_2, 20, 0.7)
+b3 <- rbinom(n_3, 20, 0.7)
+b4 <- rbinom(n_4, 20, 0.7)
+
+# Apresente os histogramas
+hist(z1, probability = TRUE)
+lines(density(z1), col = 'blue')
+
+hist(z2, probability = TRUE)
+lines(density(z2), col = 'blue')
+
+hist(z3, probability = TRUE)
+lines(density(z3), col = 'blue')
+
+hist(z4, probability = TRUE)
+lines(density(z4), col = 'blue')
+
+@
+
+<<echo = TRUE, out.width='.15\\linewidth',fig.show='hold', fig.ncol=4, fig.cap="Histogramas B", fig.subcap=c("B1", "B2", "B3", "B4")>>=
+
+hist(b1, probability = TRUE)
+
+hist(b2, probability = TRUE)
+
+hist(b3, probability = TRUE)
+
+hist(b4, probability = TRUE)
+
+@
+
+<<>>=
+
+# Limpe seu environment
+rm(list=ls()) 
+
+@
+
+\section{}
+
+Apresente seus resultados em um arquivo PDF. Garanta que seu arquivo esteja limpo, contendo as respostas, os gráficos e as tabelas, mas não eventuais mensagens e erros. O arquivo PDF pode ser gerado diretamente a partir do R por meio do RMarkdown ou do RSweave. \textcolor{red}{Para os alunos de graduação, isso é recomendado, mas não obrigatório}. Adicionalmente, forneça o script para replicação.
+
+\restoregeometry
+\doublespacing
+\normalsize
+
+\onehalfspacing
+\bibliography{Complete}
+
+\end{document}
